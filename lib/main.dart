@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,19 +18,12 @@ class MyApp extends StatelessWidget {
   }
 }
 
-const jsonString = """
-{
-    "latitude": 48.78,
-    "longitude": 9.18,
-    "current": {
-        "time": "2024-01-12T11:45",
-        "temperature_2m": -3.6,
-        "apparent_temperature": -7.0,
-        "is_day": 1,
-        "precipitation": 12.00
-    }
+Future<String> getWeatherDataAsJson() async {
+  const url =
+      'https://api.open-meteo.com/v1/forecast?latitude=48.783333&longitude=9.183333&current=temperature_2m,apparent_temperature,is_day,precipitation&timezone=Europe%2FBerlin&forecast_days=1';
+  final response = await get(Uri.parse(url));
+  return response.body;
 }
-""";
 
 class WeatherApp extends StatefulWidget {
   const WeatherApp({super.key});
@@ -45,9 +39,6 @@ class _WeatherAppState extends State<WeatherApp> {
   double? longitude;
   bool? isDay;
   double? precipitation;
-
-  // final double latitude = 48.783333;
-  // final double longitude = 9.183333;
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +80,8 @@ class _WeatherAppState extends State<WeatherApp> {
     );
   }
 
-  setValuesFromJson() {
+  Future<void> setValuesFromJson() async {
+    final jsonString = await getWeatherDataAsJson();
     final jsonObject = jsonDecode(jsonString);
 
     latitude = jsonObject['latitude'];
